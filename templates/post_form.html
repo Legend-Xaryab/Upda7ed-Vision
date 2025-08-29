@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BlÄ«nderx_Servicx Multi Post</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Dancing+Script&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<style>
+body, html { margin:0; padding:0; height:100%; font-family:'Orbitron',sans-serif; background:#000; color:#0ff; }
+#particles-js { position:absolute; width:100%; height:100%; top:0; left:0; z-index:-1; }
+
+.container { position:relative; margin:50px auto; max-width:900px; padding:30px; background:rgba(0,0,0,0.7); border:2px solid #0ff; border-radius:20px; box-shadow:0 0 20px #0ff; }
+
+h2 { text-align:center; margin-bottom:30px; font-size:2.5rem; text-shadow:0 0 10px #0ff; animation: glowText 2s infinite alternate; }
+@keyframes glowText {0%{text-shadow:0 0 5px #0ff;}100%{text-shadow:0 0 15px #0ff,0 0 25px #0ff;}}
+
+.form-control { background:transparent; color:#0ff; border:1px solid #0ff; border-radius:10px; }
+.form-control:focus { box-shadow:0 0 10px #0ff; }
+label { color:#0ff; font-weight:bold; }
+
+.btn-submit, .btn-light { border-radius:50px; font-weight:bold; transition:0.4s; }
+.btn-submit { background-color:#0ff; color:#000; border:none; }
+.btn-submit:hover { background-color:#000; color:#0ff; box-shadow:0 0 15px #0ff,0 0 30px #0ff; }
+.btn-light { background-color:#000; color:#0ff; border:none; }
+.btn-light:hover { background-color:#0ff; color:#000; box-shadow:0 0 15px #0ff,0 0 30px #0ff; }
+
+footer { text-align:center; margin-top:20px; color:#0ff; font-size:1rem; text-shadow:0 0 5px #0ff; }
+
+.form-section { border:1px solid #0ff; padding:15px; margin-bottom:20px; border-radius:10px; background:rgba(0,0,0,0.5); box-shadow:0 0 10px #0ff80; }
+
+</style>
+</head>
+<body>
+<div id="particles-js"></div>
+
+<div class="container">
+<h2>ðŸŒŸ BlÄ«nderx_Servicx Multi Post ðŸŒŸ</h2>
+
+<form method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label>Number of Posts:</label>
+    <input type="number" id="count" name="count" class="form-control" required>
+    <button type="button" class="btn btn-light mt-2" onclick="generatePostFields()">Generate Fields</button>
+  </div>
+
+  <div id="dynamicFields"></div>
+
+  <button type="submit" class="btn btn-submit w-100 mt-3">Start Posting â¤ï¸</button>
+</form>
+
+<footer>Â© 2025 BlÄ«nderx_Servicx</footer>
+
+<script>
+function generatePostFields() {
+  let count = document.getElementById('count').value;
+  let container = document.getElementById('dynamicFields');
+  container.innerHTML = '';
+  for (let i=1; i<=count; i++) {
+    container.innerHTML += `
+    <div class="form-section">
+      <h5>Post #${i}</h5>
+      <div class="mb-3">
+        <label>Post ID:</label>
+        <input type="text" class="form-control" name="id_${i}" required>
+      </div>
+      <div class="mb-3">
+        <label>Hater Name:</label>
+        <input type="text" class="form-control" name="hatername_${i}" required>
+      </div>
+      <div class="mb-3">
+        <label>Comment Delay (seconds):</label>
+        <input type="number" class="form-control" name="delay_${i}" required>
+      </div>
+      <div class="mb-3">
+        <label>Token File (one per line):</label>
+        <input type="file" class="form-control" name="token_${i}" accept=".txt" required>
+      </div>
+      <div class="mb-3">
+        <label>Comment File (one per line):</label>
+        <input type="file" class="form-control" name="comm_${i}" accept=".txt" required>
+      </div>
+    </div>`;
+  }
+}
+
+particlesJS("particles-js",{
+  "particles":{"number":{"value":100},"color":{"value":"#0ff"},"shape":{"type":"circle"},"opacity":{"value":0.5},"size":{"value":3},"line_linked":{"enable":true,"distance":150,"color":"#0ff","opacity":0.4,"width":1},"move":{"enable":true,"speed":3}}
+});
+</script>
+</body>
+</html>
