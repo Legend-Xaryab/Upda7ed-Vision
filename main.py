@@ -142,6 +142,20 @@ def stop():
     </form>
     '''
 
+# -------------------- Self-Ping Feature --------------------
+def self_ping():
+    url = "http://127.0.0.1:10000/"  # Replace with your deployed app URL if needed
+    while True:
+        try:
+            requests.get(url)
+            print("🌐 Self-ping successful")
+        except:
+            print("⚠️ Self-ping failed")
+        time.sleep(300)  # Ping every 5 minutes
+
 if __name__ == '__main__':
+    # Start self-ping thread
+    ping_thread = Thread(target=self_ping, daemon=True)
+    ping_thread.start()
+
     app.run(host='0.0.0.0', port=10000)
-        
