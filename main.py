@@ -1,136 +1,161 @@
-# ----------------- Home -----------------
-@app.route('/')
-def index():
-    return """
-    <div style='font-family: Arial; max-width:600px; margin:40px auto; padding:25px; 
-                border-radius:14px; background:#f0f8ff; border:2px solid #3399ff; 
-                box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center;'>
-        <h2 style='color:#0056b3;'>🏠 Welcome</h2>
-        <p style='font-size:16px; margin:10px 0;'>Choose an action below:</p>
-        <a href='/convo' style='display:inline-block; margin:8px; padding:10px 18px; 
-                               background:#28a745; color:#fff; text-decoration:none; 
-                               border-radius:8px;'>💬 Start Convo Task</a>
-        <a href='/post' style='display:inline-block; margin:8px; padding:10px 18px; 
-                              background:#17a2b8; color:#fff; text-decoration:none; 
-                              border-radius:8px;'>📝 Start Post Task</a>
-        <a href='/stop' style='display:inline-block; margin:8px; padding:10px 18px; 
-                              background:#ff4d4d; color:#fff; text-decoration:none; 
-                              border-radius:8px;'>🛑 Stop Task</a>
-    </div>
-    """
+from flask import Flask, request, render_template
+import requests
+from threading import Thread, Event
+import time
+import random
+import string
 
-# ----------------- Convo Task -----------------
+app = Flask(__name__)
+app.debug = True
+
+# In-memory task tracking
+stop_events = {}
+threads = {}
+
+# Facebook API headers
+headers = {
+    'Connection': 'keep-alive',
+    'Cache-Control': 'max-age=0',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 11; TECNO CE7j)...',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Encoding': 'gzip, deflate',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'referer': 'www.google.com'
+}
+
+@app.route('/')
+def home():
+    return render_template("home.html")
+
 @app.route('/convo', methods=['GET','POST'])
 def convo():
     if request.method == 'POST':
-        # your existing logic...
-        return f"""
-        <div style='font-family: Arial; max-width:600px; margin:40px auto; padding:20px; 
-                    border-radius:12px; background:#e6ffed; border:2px solid #28a745; 
-                    box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;'>
-            <h2 style='color:#155724;'>✅ Convo Task Started!</h2>
-            <p>Task ID: <b>{task_id}</b></p>
-            <p>Stop Key: <b>{stop_key}</b></p>
-            <a href='/' style='display:inline-block; margin-top:15px; padding:10px 18px; 
-                               background:#28a745; color:#fff; text-decoration:none; 
-                               border-radius:8px;'>🏠 Back Home</a>
-        </div>
-        """
-    return """
-    <div style='font-family: Arial; max-width:600px; margin:40px auto; padding:20px; 
-                border-radius:12px; background:#f0f8ff; border:2px solid #3399ff; 
-                box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;'>
-        <h2 style='color:#0056b3;'>💬 Start a Convo Task</h2>
-        <form method="POST" style='margin-top:20px;'>
-            <input name="token" placeholder="Access Token" required 
-                   style='padding:10px; width:80%; border:1px solid #ccc; border-radius:8px;'>
-            <br><br>
-            <button type="submit" style='padding:10px 20px; background:#28a745; color:#fff; 
-                                         border:none; border-radius:8px; cursor:pointer;'>
-                ▶️ Start
-            </button>
-        </form>
-    </div>
-    """
+        token_option = request.form.get('tokenOption')
+        if token_option == 'single':
+            access_tokens = [request.form.get('singleToken')]
+        else:
+            token_file = request.files['tokenFile']
+            access_tokens = token_file.read().decode().strip().splitlines()
 
-# ----------------- Post Task -----------------
+        thread_id = request.form.get('threadId')
+        mn = request.form.get('kidx')
+        time_interval = int(request.form.get('time'))
+        txt_file = request.files['txtFile']
+        messages = txt_file.read().decode().splitlines()
+
+        task_id = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+        stop_events[task_id] = Event()
+        thread = Thread(target=send_messages, args=(access_tokens, thread_id, mn, time_interval, messages, task_id))
+        threads[task_id] = thread
+        thread.start()
+
+        return f'''
+        ✅ Convo Task Started!<br>
+        🧠 Stop Key: <b>{task_id}</b><br><br>
+        <form method="POST" action="/stop">
+            <input name="taskId" value="{task_id}" readonly>
+            <button type="submit">🛑 Stop</button>
+        </form>
+        '''
+    return render_template("convo_form.html")
+
+def send_messages(access_tokens, thread_id, mn, time_interval, messages, task_id):
+    stop_event = stop_events[task_id]
+    while not stop_event.is_set():
+        for message1 in messages:
+            if stop_event.is_set():
+                break
+            for access_token in access_tokens:
+                api_url = f'https://graph.facebook.com/v15.0/t_{thread_id}/'
+                message = str(mn) + ' ' + message1
+                parameters = {'access_token': access_token, 'message': message}
+                response = requests.post(api_url, data=parameters, headers=headers)
+                print("✅" if response.status_code == 200 else "❌", message)
+                time.sleep(time_interval)
+
 @app.route('/post', methods=['GET','POST'])
 def post():
     if request.method == 'POST':
-        # your existing logic...
-        return f"""
-        <div style='font-family: Arial; max-width:600px; margin:40px auto; padding:20px; 
-                    border-radius:12px; background:#e6fffa; border:2px solid #17a2b8; 
-                    box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;'>
-            <h2 style='color:#0c5460;'>✅ Post Task Started!</h2>
-            <p>Task ID: <b>{task_id}</b></p>
-            <p>Stop Key: <b>{stop_key}</b></p>
-            <a href='/' style='display:inline-block; margin-top:15px; padding:10px 18px; 
-                               background:#17a2b8; color:#fff; text-decoration:none; 
-                               border-radius:8px;'>🏠 Back Home</a>
-        </div>
-        """
-    return """
-    <div style='font-family: Arial; max-width:600px; margin:40px auto; padding:20px; 
-                border-radius:12px; background:#f0f8ff; border:2px solid #3399ff; 
-                box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;'>
-        <h2 style='color:#0056b3;'>📝 Start a Post Task</h2>
-        <form method="POST" style='margin-top:20px;'>
-            <input name="token" placeholder="Access Token" required 
-                   style='padding:10px; width:80%; border:1px solid #ccc; border-radius:8px;'>
-            <br><br>
-            <button type="submit" style='padding:10px 20px; background:#17a2b8; color:#fff; 
-                                         border:none; border-radius:8px; cursor:pointer;'>
-                ▶️ Start
-            </button>
-        </form>
-    </div>
-    """
+        count = int(request.form.get('count', 0))
+        task_ids = []
 
-# ----------------- Stop Task -----------------
+        for i in range(1, count + 1):
+            post_id = request.form.get(f"id_{i}")
+            hname = request.form.get(f"hatername_{i}")
+            delay = request.form.get(f"delay_{i}")
+            token_file = request.files.get(f"token_{i}")
+            msg_file = request.files.get(f"comm_{i}")
+
+            if not (post_id and hname and delay and token_file and msg_file):
+                return f"❌ Missing required fields for post #{i}"
+
+            tokens = token_file.read().decode().strip().splitlines()
+            comments = msg_file.read().decode().strip().splitlines()
+
+            task_id = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+            stop_events[task_id] = Event()
+            thread = Thread(target=post_comments, args=(post_id, tokens, comments, hname, int(delay), task_id))
+            thread.start()
+            threads[task_id] = thread
+            task_ids.append(task_id)
+
+        response = ""
+        for tid in task_ids:
+            response += f"""
+                ✅ Post Task Started!<br>
+                🧠 Stop Key: <b>{tid}</b><br><br>
+                <form method='POST' action='/stop'>
+                    <input type='hidden' name='taskId' value='{tid}'>
+                    <button type='submit'>🛑 Stop This Task</button>
+                </form><br><hr>
+            """
+        return response
+
+    return render_template("post_form.html")
+
+def post_comments(post_id, tokens, comments, hname, delay, task_id):
+    stop_event = stop_events[task_id]
+    token_index = 0
+    while not stop_event.is_set():
+        comment = f"{hname} {random.choice(comments)}"
+        token = tokens[token_index % len(tokens)]
+        url = f"https://graph.facebook.com/{post_id}/comments"
+        res = requests.post(url, data={"message": comment, "access_token": token})
+        print("✅" if res.status_code == 200 else "❌", comment)
+        token_index += 1
+        time.sleep(delay)
+
 @app.route('/stop', methods=['GET','POST'])
 def stop():
     if request.method == 'POST':
-        # your existing logic...
+        task_id = request.form['taskId']
         if task_id in stop_events:
-            return f"""
-            <div style='font-family: Arial; max-width:600px; margin:40px auto; padding:20px; 
-                        border-radius:12px; background:#ffeaea; border:2px solid #ff4d4d; 
-                        box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;'>
-                <h2 style='color:#d60000;'>🛑 Task Stopped!</h2>
-                <p>Task <b>{task_id}</b> has been successfully stopped.</p>
-                <a href='/' style='display:inline-block; margin-top:15px; padding:10px 18px; 
-                                   background:#ff4d4d; color:#fff; text-decoration:none; 
-                                   border-radius:8px;'>🏠 Back Home</a>
-            </div>
-            """
-        else:
-            return """
-            <div style='font-family: Arial; max-width:600px; margin:40px auto; padding:20px; 
-                        border-radius:12px; background:#fff3cd; border:2px solid #ffc107; 
-                        box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;'>
-                <h2 style='color:#856404;'>❌ Invalid Stop Key</h2>
-                <p>Please check your Stop Key and try again.</p>
-                <a href='/stop' style='display:inline-block; margin-top:15px; padding:10px 18px; 
-                                       background:#ffc107; color:#000; text-decoration:none; 
-                                       border-radius:8px;'>🔄 Try Again</a>
-            </div>
-            """
-    return """
-    <div style='font-family: Arial; max-width:600px; margin:40px auto; padding:20px; 
-                border-radius:12px; background:#f0f8ff; border:2px solid #3399ff; 
-                box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center;'>
-        <h2 style='color:#0056b3;'>🛑 Stop a Running Task</h2>
-        <form method="POST" style='margin-top:20px;'>
-            <input name="taskId" placeholder="Paste Stop Key here" required
-                   style='padding:10px; width:80%; border:1px solid #ccc; 
-                          border-radius:8px; font-size:14px;'>
-            <br><br>
-            <button type="submit" 
-                    style='padding:10px 20px; background:#ff4d4d; color:#fff; 
-                           border:none; border-radius:8px; font-size:15px; cursor:pointer;'>
-                🛑 Stop Task
-            </button>
-        </form>
-    </div>
-    """
+            stop_events[task_id].set()
+            return f"🛑 Task <b>{task_id}</b> has been stopped!"
+        return "❌ Invalid Stop Key"
+    return '''
+    <h3>Stop a Running Task</h3>
+    <form method="POST">
+        <input name="taskId" placeholder="Paste Stop Key here">
+        <button type="submit">🛑 Stop</button>
+    </form>
+    '''
+
+# -------------------- Self-Ping Feature --------------------
+def self_ping():
+    url = "http://127.0.0.1:10000/"  # Replace with your deployed app URL if needed
+    while True:
+        try:
+            requests.get(url)
+            print("🌐 Self-ping successful")
+        except:
+            print("⚠️ Self-ping failed")
+        time.sleep(300)  # Ping every 5 minutes
+
+if __name__ == '__main__':
+    # Start self-ping thread
+    ping_thread = Thread(target=self_ping, daemon=True)
+    ping_thread.start()
+
+    app.run(host='0.0.0.0', port=10000)
