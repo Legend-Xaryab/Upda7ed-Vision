@@ -144,7 +144,7 @@ def stop():
 
 # -------------------- Self-Ping Feature --------------------
 def self_ping():
-    url = "http://127.0.0.1:10000/"  # Replace with your deployed app URL if needed
+    url = "https://cha7-upda7ed.onrender.com"  # Replace with your deployed app URL if needed
     while True:
         try:
             requests.get(url)
