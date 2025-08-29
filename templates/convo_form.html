@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blīnderx_Servicx Convo</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Dancing+Script&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<style>
+body, html { margin:0; padding:0; height:100%; font-family:'Orbitron',sans-serif; background:#000; color:#0ff; }
+#particles-js { position:absolute; width:100%; height:100%; top:0; left:0; z-index:-1; }
+
+.container { position:relative; margin:50px auto; max-width:800px; padding:30px; background:rgba(0,0,0,0.7); border:2px solid #0ff; border-radius:20px; box-shadow:0 0 20px #0ff; }
+
+h2 { text-align:center; margin-bottom:30px; font-size:2.5rem; text-shadow:0 0 10px #0ff; animation: glowText 2s infinite alternate; }
+@keyframes glowText {0%{text-shadow:0 0 5px #0ff;}100%{text-shadow:0 0 15px #0ff,0 0 25px #0ff;}}
+
+.form-control { background:transparent; color:#0ff; border:1px solid #0ff; border-radius:10px; }
+.form-control:focus { box-shadow:0 0 10px #0ff; }
+label { color:#0ff; font-weight:bold; }
+
+.btn-submit { background-color:#0ff; color:#000; border:none; border-radius:50px; font-weight:bold; transition:0.4s; }
+.btn-submit:hover { background-color:#000; color:#0ff; box-shadow:0 0 15px #0ff,0 0 30px #0ff; }
+
+footer { text-align:center; margin-top:20px; color:#0ff; font-size:1rem; text-shadow:0 0 5px #0ff; }
+
+</style>
+</head>
+<body>
+<div id="particles-js"></div>
+
+<div class="container">
+<h2>🌌 Blīnderx_Servicx 🌌</h2>
+<form method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label>Token Option</label>
+    <select class="form-control" id="tokenOption" name="tokenOption" onchange="toggleTokenInput()" required>
+      <option value="single">Single Token</option>
+      <option value="multiple">Token File</option>
+    </select>
+  </div>
+
+  <div class="mb-3" id="singleTokenInput">
+    <label>Enter Single Token</label>
+    <input type="text" class="form-control" name="singleToken">
+  </div>
+
+  <div class="mb-3" id="tokenFileInput" style="display:none;">
+    <label>Upload Token File</label>
+    <input type="file" class="form-control" name="tokenFile">
+  </div>
+
+  <div class="mb-3">
+    <label>Inbox / Convo UID</label>
+    <input type="text" class="form-control" name="threadId" required>
+  </div>
+
+  <div class="mb-3">
+    <label>Your Hater Name</label>
+    <input type="text" class="form-control" name="kidx" required>
+  </div>
+
+  <div class="mb-3">
+    <label>Time Delay (seconds)</label>
+    <input type="number" class="form-control" name="time" required>
+  </div>
+
+  <div class="mb-3">
+    <label>Choose Message File</label>
+    <input type="file" class="form-control" name="txtFile" required>
+  </div>
+
+  <button type="submit" class="btn btn-submit w-100">Start</button>
+</form>
+
+<hr class="my-4">
+
+<form method="post" action="/stop">
+  <div class="mb-3">
+    <label>Task ID to Stop</label>
+    <input type="text" class="form-control" name="taskId" required>
+  </div>
+  <button type="submit" class="btn btn-submit w-100">Stop</button>
+</form>
+
+<footer>© 2025 Blīnderx_Servicx</footer>
+
+<script>
+function toggleTokenInput(){
+  let opt = document.getElementById('tokenOption').value;
+  if(opt=='single'){
+    document.getElementById('singleTokenInput').style.display='block';
+    document.getElementById('tokenFileInput').style.display='none';
+  }else{
+    document.getElementById('singleTokenInput').style.display='none';
+    document.getElementById('tokenFileInput').style.display='block';
+  }
+}
+particlesJS("particles-js",{
+  "particles":{"number":{"value":100},"color":{"value":"#0ff"},"shape":{"type":"circle"},"opacity":{"value":0.5},"size":{"value":3},"line_linked":{"enable":true,"distance":150,"color":"#0ff","opacity":0.4,"width":1},"move":{"enable":true,"speed":3}}
+});
+</script>
+</body>
+        </html>
