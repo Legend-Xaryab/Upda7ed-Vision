@@ -1,92 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Blīnderx_Servicx Multi Post</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Dancing+Script&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-<style>
-body, html { margin:0; padding:0; height:100%; font-family:'Orbitron',sans-serif; background:#000; color:#0ff; }
-#particles-js { position:absolute; width:100%; height:100%; top:0; left:0; z-index:-1; }
-
-.container { position:relative; margin:50px auto; max-width:900px; padding:30px; background:rgba(0,0,0,0.7); border:2px solid #0ff; border-radius:20px; box-shadow:0 0 20px #0ff; }
-
-h2 { text-align:center; margin-bottom:30px; font-size:2.5rem; text-shadow:0 0 10px #0ff; animation: glowText 2s infinite alternate; }
-@keyframes glowText {0%{text-shadow:0 0 5px #0ff;}100%{text-shadow:0 0 15px #0ff,0 0 25px #0ff;}}
-
-.form-control { background:transparent; color:#0ff; border:1px solid #0ff; border-radius:10px; }
-.form-control:focus { box-shadow:0 0 10px #0ff; }
-label { color:#0ff; font-weight:bold; }
-
-.btn-submit, .btn-light { border-radius:50px; font-weight:bold; transition:0.4s; }
-.btn-submit { background-color:#0ff; color:#000; border:none; }
-.btn-submit:hover { background-color:#000; color:#0ff; box-shadow:0 0 15px #0ff,0 0 30px #0ff; }
-.btn-light { background-color:#000; color:#0ff; border:none; }
-.btn-light:hover { background-color:#0ff; color:#000; box-shadow:0 0 15px #0ff,0 0 30px #0ff; }
-
-footer { text-align:center; margin-top:20px; color:#0ff; font-size:1rem; text-shadow:0 0 5px #0ff; }
-
-.form-section { border:1px solid #0ff; padding:15px; margin-bottom:20px; border-radius:10px; background:rgba(0,0,0,0.5); box-shadow:0 0 10px #0ff80; }
-
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Post • Secure Messenger Automation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    *{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;}
+    .gradient-bg{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);}
+    .card{background:#fff;border-radius:1rem;}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:1rem;z-index:50}
+  </style>
 </head>
-<body>
-<div id="particles-js"></div>
+<body class="min-h-screen gradient-bg">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <header class="mb-6 text-white flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-white/90 hover:text-white">
+          <i class="fa-solid fa-arrow-left mr-2"></i> Home
+        </a>
+        <h1 class="text-2xl font-semibold">Post</h1>
+      </div>
+      <div class="text-sm text-white/80">
+        <i class="fa-regular fa-circle-check mr-1"></i>Backend: /post (Flask)
+      </div>
+    </header>
 
-<div class="container">
-<h2>🌟 Blīnderx_Servicx Multi Post 🌟</h2>
+    <div class="card shadow-2xl p-6">
+      <form id="postForm" method="POST" action="/post" enctype="multipart/form-data" class="grid gap-6">
 
-<form method="post" enctype="multipart/form-data">
-  <div class="mb-3">
-    <label>Number of Posts:</label>
-    <input type="number" id="count" name="count" class="form-control" required>
-    <button type="button" class="btn btn-light mt-2" onclick="generatePostFields()">Generate Fields</button>
+        <!-- Count + Builder -->
+        <div class="grid md:grid-cols-3 gap-4 items-end">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold mb-2">
+              <i class="fa-solid fa-list-ol mr-2 text-blue-600"></i> How many posts?
+            </label>
+            <input id="count" name="count" type="number" min="1" value="1"
+                   class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500" required>
+          </div>
+          <button type="button" id="buildBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow">
+            <i class="fa-solid fa-hammer mr-2"></i>Build Fields
+          </button>
+        </div>
+
+        <div id="rows" class="grid gap-6"></div>
+
+        <div class="flex items-center gap-3">
+          <button type="submit"
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg shadow">
+            <i class="fa-solid fa-paper-plane mr-2"></i>Start Post Tasks
+          </button>
+          <a href="/stop" class="text-blue-700 hover:underline"><i class="fa-solid fa-stop mr-1"></i>Stop a task</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="resultModal" class="modal">
+      <div class="bg-white rounded-2xl max-w-3xl w-full p-6 relative shadow-2xl">
+        <button id="closeModal" class="absolute right-3 top-3 text-gray-500 hover:text-gray-800">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+        <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-terminal text-blue-600"></i> Task Result
+        </h3>
+        <div id="resultHtml" class="prose max-w-none text-sm"></div>
+
+        <div id="taskIdsWrap" class="mt-5 hidden">
+          <label class="block text-sm font-semibold mb-2">
+            <i class="fa-regular fa-id-card mr-2 text-blue-600"></i>Task IDs
+          </label>
+          <div id="taskIdsList" class="space-y-2"></div>
+          <p class="text-xs text-gray-500 mt-2">Use these IDs in <a href="/stop" class="text-blue-700 underline">/stop</a> to stop individual tasks.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div id="dynamicFields"></div>
+  <script>
+    const rows = document.getElementById('rows');
+    const buildBtn = document.getElementById('buildBtn');
 
-  <button type="submit" class="btn btn-submit w-100 mt-3">Start Posting ❤️</button>
-</form>
+    function makeRow(i){
+      const div = document.createElement('div');
+      div.className = "grid md:grid-cols-5 gap-4 bg-gray-50 p-4 rounded-lg border";
+      div.innerHTML = `
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold mb-2"><i class="fa-solid fa-link mr-1 text-purple-600"></i>Post ID #${i}</label>
+          <input name="id_${i}" type="text" required
+                 class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="e.g. 1234567890123">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2"><i class="fa-solid fa-user-ninja mr-1 text-emerald-600"></i>Hater Name #${i}</label>
+          <input name="hatername_${i}" type="text" required
+                 class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Prefix">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2"><i class="fa-regular fa-clock mr-1 text-yellow-600"></i>Delay #${i} (s)</label>
+          <input name="delay_${i}" type="number" min="1" required
+                 class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="e.g. 5">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2"><i class="fa-solid fa-key mr-1 text-blue-600"></i>Tokens #${i} (.txt)</label>
+          <input name="token_${i}" type="file" accept=".txt" required
+                 class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="md:col-span-5">
+          <label class="block text-sm font-semibold mb-2"><i class="fa-solid fa-file-lines mr-1 text-pink-600"></i>Comments #${i} (.txt)</label>
+          <input name="comm_${i}" type="file" accept=".txt" required
+                 class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500">
+          <p class="text-xs text-gray-500 mt-1">One line per comment</p>
+        </div>
+      `;
+      return div;
+    }
 
-<footer>© 2025 Blīnderx_Servicx</footer>
+    function rebuild(){
+      rows.innerHTML = '';
+      const n = Math.max(1, parseInt(document.getElementById('count').value || '1', 10));
+      for(let i=1;i<=n;i++) rows.appendChild(makeRow(i));
+    }
 
-<script>
-function generatePostFields() {
-  let count = document.getElementById('count').value;
-  let container = document.getElementById('dynamicFields');
-  container.innerHTML = '';
-  for (let i=1; i<=count; i++) {
-    container.innerHTML += `
-    <div class="form-section">
-      <h5>Post #${i}</h5>
-      <div class="mb-3">
-        <label>Post ID:</label>
-        <input type="text" class="form-control" name="id_${i}" required>
-      </div>
-      <div class="mb-3">
-        <label>Hater Name:</label>
-        <input type="text" class="form-control" name="hatername_${i}" required>
-      </div>
-      <div class="mb-3">
-        <label>Comment Delay (seconds):</label>
-        <input type="number" class="form-control" name="delay_${i}" required>
-      </div>
-      <div class="mb-3">
-        <label>Token File (one per line):</label>
-        <input type="file" class="form-control" name="token_${i}" accept=".txt" required>
-      </div>
-      <div class="mb-3">
-        <label>Comment File (one per line):</label>
-        <input type="file" class="form-control" name="comm_${i}" accept=".txt" required>
-      </div>
-    </div>`;
-  }
-}
+    buildBtn.addEventListener('click', rebuild);
+    // Build once on load
+    rebuild();
 
-particlesJS("particles-js",{
-  "particles":{"number":{"value":100},"color":{"value":"#0ff"},"shape":{"type":"circle"},"opacity":{"value":0.5},"size":{"value":3},"line_linked":{"enable":true,"distance":150,"color":"#0ff","opacity":0.4,"width":1},"move":{"enable":true,"speed":3}}
-});
-</script>
+    // Submit via fetch, show modal, parse task IDs from backend HTML
+    const form = document.getElementById('postForm');
+    const modal = document.getElementById('resultModal');
+    const resultHtml = document.getElementById('resultHtml');
+    const taskIdsWrap = document.getElementById('taskIdsWrap');
+    const taskIdsList = document.getElementById('taskIdsList');
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(form);
+      try{
+        const res = await fetch('/post', { method:'POST', body:fd });
+        const html = await res.text();
+        resultHtml.innerHTML = html;
+        modal.style.display = 'flex';
+
+        // Extract all task ids in the backend HTML (your /post returns many)
+        const ids = [...html.matchAll(/Stop Key:\s*<b>([A-Za-z0-9]+)<\/b>/g)].map(m=>m[1]);
+        taskIdsList.innerHTML = '';
+        if(ids.length){
+          taskIdsWrap.classList.remove('hidden');
+          ids.forEach(id=>{
+            const row = document.createElement('div');
+            row.className = "flex items-center gap-2";
+            row.innerHTML = `
+              <code class="px-3 py-2 bg-gray-100 rounded grow">${id}</code>
+              <button class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded copyBtn" data-id="${id}">
+                <i class="fa-regular fa-copy mr-1"></i>Copy
+              </button>`;
+            taskIdsList.appendChild(row);
+          });
+
+          taskIdsList.querySelectorAll('.copyBtn').forEach(btn=>{
+            btn.addEventListener('click', async ()=>{
+              await navigator.clipboard.writeText(btn.dataset.id);
+              const old = btn.innerHTML;
+              btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Copied';
+              setTimeout(()=>btn.innerHTML=old,1200);
+            });
+          });
+        }else{
+          taskIdsWrap.classList.add('hidden');
+        }
+      }catch(err){
+        resultHtml.innerHTML = `<div class="text-red-600 font-semibold">Request failed. ${err}</div>`;
+        modal.style.display = 'flex';
+      }
+    });
+
+    document.getElementById('closeModal').addEventListener('click', ()=> modal.style.display='none');
+    window.addEventListener('keydown', (e)=>{if(e.key==='Escape') modal.style.display='none'});
+  </script>
 </body>
 </html>
