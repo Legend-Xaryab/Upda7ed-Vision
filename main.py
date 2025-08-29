@@ -114,7 +114,6 @@ def post():
 
     return render_template("post_form.html")
 
-# ---------- Updated post_comments with proper error handling ----------
 def post_comments(post_id, tokens, comments, hname, delay, task_id):
     stop_event = stop_events[task_id]
     token_index = 0
@@ -122,15 +121,8 @@ def post_comments(post_id, tokens, comments, hname, delay, task_id):
         comment = f"{hname} {random.choice(comments)}"
         token = tokens[token_index % len(tokens)]
         url = f"https://graph.facebook.com/{post_id}/comments"
-        try:
-            res = requests.post(url, data={"message": comment, "access_token": token}, headers=headers)
-            data = res.json()
-            if 'error' in data:
-                print("❌", comment, data['error']['message'])
-            else:
-                print("✅", comment)
-        except Exception as e:
-            print("❌ Exception:", e)
+        res = requests.post(url, data={"message": comment, "access_token": token})
+        print("✅" if res.status_code == 200 else "❌", comment)
         token_index += 1
         time.sleep(delay)
 
@@ -150,20 +142,6 @@ def stop():
     </form>
     '''
 
-# -------------------- Self-Ping Feature --------------------
-def self_ping():
-    url = "http://127.0.0.1:10000/"  # Replace with your deployed app URL if needed
-    while True:
-        try:
-            requests.get(url)
-            print("🌐 Self-ping successful")
-        except:
-            print("⚠️ Self-ping failed")
-        time.sleep(300)  # Ping every 5 minutes
-
 if __name__ == '__main__':
-    # Start self-ping thread
-    ping_thread = Thread(target=self_ping, daemon=True)
-    ping_thread.start()
-
     app.run(host='0.0.0.0', port=10000)
+        
